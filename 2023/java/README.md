@@ -29,9 +29,3 @@ mvn test -Dtest=TestDay2A
 java -jar target/aoc-2023-1.0-SNAPSHOT-jar-with-dependencies.jar --day 1 --task a
 java -jar target/aoc-2023-1.0-SNAPSHOT-jar-with-dependencies.jar --day 1 --task a --input ../resources/1/test_a.txt
 ```
-
-## Run UnitTests
-
-```shell
-mvn test
-```
