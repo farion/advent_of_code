@@ -11,9 +11,9 @@ $task = $argv[1];
 $inputFile = $argv[2];
 
 if($task === "b"){
-    $result = SolutionA::getResult($inputFile);
-} else {
     $result = SolutionB::getResult($inputFile);
+} else {
+    $result = SolutionA::getResult($inputFile);
 }
 
 echo "Result: " . $result . "\n";
