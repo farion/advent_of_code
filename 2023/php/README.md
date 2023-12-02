@@ -11,21 +11,6 @@ composer install
 compose update
 ```
 
-## Run UnitTests
-
-```shell
-vendor/bin/phpunit test/TestDay2A.php
-```
-
-
-# Advent of Code Java Stream Hell Edition
-
-## Compile
-
-```shell
-mvn clean install
-```
-
 ## Test
 
 ### All Tests
