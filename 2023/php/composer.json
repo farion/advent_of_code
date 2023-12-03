@@ -1,4 +1,6 @@
 {
+  "name": "Advent of Code PHP 2023",
+  "description": "PHP solutions for Advent of Code 2023",
   "autoload": {
     "psr-4": {
       "Acme\\": "src/"
