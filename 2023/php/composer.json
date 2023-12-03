@@ -1,5 +1,5 @@
 {
-  "name": "advent-of-code-2023-php-frieder",
+  "name": "frieder/advent-of-code-2023-php",
   "description": "PHP solutions for Advent of Code 2023",
   "autoload": {
     "psr-4": {
