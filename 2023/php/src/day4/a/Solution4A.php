@@ -12,23 +12,17 @@ final class Solution4A
 
         foreach ($lines as $i => $line) {
             $splittedLine = preg_split('/[|:]/', $line);
-            preg_match_all("([0-9]+)",$splittedLine[1],$winning);
-            preg_match_all("([0-9]+)",$splittedLine[2],$having);
+            preg_match_all("([0-9]+)", $splittedLine[1], $winning);
+            preg_match_all("([0-9]+)", $splittedLine[2], $having);
             $winning = $winning[0];
             $having = $having[0];
-            $lineResult = 0;
-            foreach($winning as $winNumber){
-                if(in_array($winNumber, $having)){
-                    if($lineResult == 0){
-                        $lineResult = 1;
-                    }else{
-                        $lineResult *= 2;
-                    }
-                }
+            $lineMatchCount = 0;
+            foreach ($winning as $winNumber) {
+                $lineMatchCount += in_array($winNumber, $having) ? 1 : 0;
             }
-            $result += $lineResult;
+            $result += floor(pow(2, $lineMatchCount-1));
         }
 
-        return $result;
+        return intval($result);
     }
 }
