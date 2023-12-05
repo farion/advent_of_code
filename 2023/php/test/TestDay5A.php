@@ -10,12 +10,12 @@ final class TestDay5A extends TestCase
 
     public function testExample(): void
     {
-        $this->assertSame(13, Solution5A::getResult("../resources/4/test_a.txt"));
+        $this->assertSame(35, Solution5A::getResult("../resources/5/test_a.txt"));
     }
 
     public function testResult(): void
     {
-        $this->assertSame(23235, Solution5A::getResult("../resources/4/input.txt"));
+        $this->assertSame(196167384, Solution5A::getResult("../resources/5/input.txt"));
     }
 
 }

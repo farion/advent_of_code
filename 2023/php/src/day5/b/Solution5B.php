@@ -2,15 +2,21 @@
 
 namespace day5\b;
 
+use Amp\Parallel\Worker\Execution;
+use ProcessRangeTask;
+use function Amp\Future\await;
+use function Amp\Parallel\Worker\submit;
+
 final class Solution5B
 {
+    private static int $SEEK = 10000;
+
     public static function getResult(string $inputFile): int
     {
         $content = file_get_contents($inputFile);
         $lines = explode("\n", $content);
 
         $data = array();
-
         $currentSource = "seeds";
         $seeds = array();
 
@@ -21,7 +27,6 @@ final class Solution5B
 
             if (preg_match("/^seeds:.*/", $line)) {
                 preg_match_all("/([0-9]+) ([0-9]+)/", $line, $seeds);
-
             } elseif (preg_match("/^([a-z]+)-to-([a-z]+).*$/", $line, $categoryMatches)) {
                 $currentSource = $categoryMatches[1];
                 $currentTarget = $categoryMatches[2];
@@ -42,65 +47,16 @@ final class Solution5B
             }
         }
 
-        $curLoc = null;
-        $seek = 20000;
+        $executions = [];
         for ($i = 0; $i < sizeof($seeds[1]); $i++) {
-            for ($j = 0; $j < intval($seeds[2][$i]); $j++) {
-
-                $seed = intval($seeds[1][$i]) + $j;
-                $r = self::getTarget("seed", "location", $seed, $data);
-
-                if ($curLoc == null) {
-                    $curLoc = $r["destination"];
-                } else {
-                    $curLoc = min($curLoc, $r["destination"]);
-                }
-
-                //try seek
-                if ($j + $seek < intval($seeds[2][$i])) {
-                    $r2 = self::getTarget("seed", "location", $seed + $seek, $data);
-                    if($r2["pathid"] == $r["pathid"]){
-                        if ($curLoc == null) {
-                            $curLoc = $r2["destination"];
-                        } else {
-                            $curLoc = min($curLoc, $r["destination"]);
-                        }
-                        $j += $seek;
-                    }
-                }
-            }
+            $executions[$i] = submit(new ProcessRangeTask($seeds[1][$i], $seeds[2][$i], $data, self::$SEEK));
         }
 
-        return $curLoc;
-    }
+        $responses = await(array_map(
+            fn(Execution $e) => $e->getFuture(),
+            $executions,
+        ));
 
-    private
-    static function getTarget(string $source, string $target, int $initial, array $data, $pathid = "")
-    {
-
-        if ($source == $target)
-            return 0;
-
-        $destination = $initial;
-
-        $hit = "-1";
-
-        foreach ($data[$source]["mapping"] as $i => $mapping) {
-            if ($initial >= $mapping["sourceStart"] && $initial < $mapping["sourceStart"] + $mapping["range"]) {
-                $destination = $mapping["destinationStart"] + ($initial - $mapping["sourceStart"]);
-                $hit = $i;
-                break;
-            }
-
-        }
-
-        if ($data[$source]["target"] == $target) {
-            return array(
-                "destination" => $destination,
-                "pathid" => $pathid . $source . "-to-" . $data[$source]["target"] . ":" . $hit . ">"
-            );
-        }
-        return self::getTarget($data[$source]["target"], $target, $destination, $data, $pathid);
-
+        return min($responses);
     }
 }
