@@ -36,45 +36,71 @@ final class Solution5B
                     "sourceStart" => intval($mappingMatches[0][1]),
                     "range" => intval($mappingMatches[0][2])
                 );
+                usort($data[$currentSource]["mapping"], function ($a, $b) {
+                    return $a["sourceStart"] > $b["sourceStart"];
+                });
             }
         }
 
-
         $curLoc = null;
+        $seek = 20000;
         for ($i = 0; $i < sizeof($seeds[1]); $i++) {
-            echo "Searching seed " . $seeds[1][$i] . "-" . $seeds[2][$i] . " -> curLoc: " . $curLoc . "\n";
             for ($j = 0; $j < intval($seeds[2][$i]); $j++) {
+
                 $seed = intval($seeds[1][$i]) + $j;
-                $loc = self::getTarget("seed", "location", $seed, $data);
+                $r = self::getTarget("seed", "location", $seed, $data);
+
                 if ($curLoc == null) {
-                    $curLoc = $loc;
+                    $curLoc = $r["destination"];
                 } else {
-                    $curLoc = min($curLoc, $loc);
+                    $curLoc = min($curLoc, $r["destination"]);
+                }
+
+                //try seek
+                if ($j + $seek < intval($seeds[2][$i])) {
+                    $r2 = self::getTarget("seed", "location", $seed + $seek, $data);
+                    if($r2["pathid"] == $r["pathid"]){
+                        if ($curLoc == null) {
+                            $curLoc = $r2["destination"];
+                        } else {
+                            $curLoc = min($curLoc, $r["destination"]);
+                        }
+                        $j += $seek;
+                    }
                 }
             }
         }
 
-        //  return self::getTarget("seed","location",956462721,$data);
-
         return $curLoc;
     }
 
-    private static function getTarget(string $source, string $target, int $initial, array $data)
+    private
+    static function getTarget(string $source, string $target, int $initial, array $data, $pathid = "")
     {
 
         if ($source == $target)
             return 0;
 
         $destination = $initial;
-        foreach ($data[$source]["mapping"] as $mapping) {
+
+        $hit = "-1";
+
+        foreach ($data[$source]["mapping"] as $i => $mapping) {
             if ($initial >= $mapping["sourceStart"] && $initial < $mapping["sourceStart"] + $mapping["range"]) {
                 $destination = $mapping["destinationStart"] + ($initial - $mapping["sourceStart"]);
+                $hit = $i;
                 break;
             }
+
         }
+
         if ($data[$source]["target"] == $target) {
-            return $destination;
+            return array(
+                "destination" => $destination,
+                "pathid" => $pathid . $source . "-to-" . $data[$source]["target"] . ":" . $hit . ">"
+            );
         }
-        return self::getTarget($data[$source]["target"], $target, $destination, $data);
+        return self::getTarget($data[$source]["target"], $target, $destination, $data, $pathid);
+
     }
 }
