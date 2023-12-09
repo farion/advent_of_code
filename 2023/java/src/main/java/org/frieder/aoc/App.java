@@ -28,8 +28,7 @@ public class App {
 
             Object result = clazz.getMethod("getResult", String.class).invoke(null, input);
 
-            System.out.println(result);
-
+            System.out.printf("%.0f\n", (double) result);
 
         } catch (Exception e) {
             e.printStackTrace();
