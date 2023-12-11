@@ -4,18 +4,19 @@ $loader = require __DIR__ . '/../vendor/autoload.php';
 
 use day6\b\Solution6B;
 use PHPUnit\Framework\TestCase;
+use utils\TestLogger;
 
 final class TestDay6B extends TestCase
 {
 
     public function testExample(): void
     {
-        $this->assertEqualsWithDelta(71503, Solution6B::getResult("../resources/6/test_b.txt"), 0);
+        $this->assertEqualsWithDelta(71503, Solution6B::getResult("../resources/6/test_b.txt", TestLogger::createTestLogger()), 0);
     }
 
     public function testResult(): void
     {
-        $this->assertEqualsWithDelta(45128024, Solution6B::getResult("../resources/6/input.txt"), 0);
+        $this->assertEqualsWithDelta(45128024, Solution6B::getResult("../resources/6/input.txt", TestLogger::createTestLogger()), 0);
     }
 
 }

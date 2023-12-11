@@ -1,9 +1,11 @@
 <?php declare(strict_types=1);
 
 namespace day6\b;
+use Monolog\Logger;
+
 final class Solution6B
 {
-    public static function getResult(string $inputFile): float
+    public static function getResult(string $inputFile, Logger $logger): float
     {
         $content = file_get_contents($inputFile);
         $lines = explode("\n", $content);

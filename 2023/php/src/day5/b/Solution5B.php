@@ -3,6 +3,7 @@
 namespace day5\b;
 
 use Amp\Parallel\Worker\Execution;
+use Monolog\Logger;
 use ProcessRangeTask;
 use function Amp\Future\await;
 use function Amp\Parallel\Worker\submit;
@@ -11,7 +12,7 @@ final class Solution5B
 {
     private static int $SEEK = 10000;
 
-    public static function getResult(string $inputFile): int
+    public static function getResult(string $inputFile, Logger $logger): int
     {
         $content = file_get_contents($inputFile);
         $lines = explode("\n", $content);

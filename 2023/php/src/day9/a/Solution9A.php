@@ -2,9 +2,11 @@
 
 namespace day9\a;
 
+use Monolog\Logger;
+
 final class Solution9A
 {
-    public static function getResult(string $inputFile): int
+    public static function getResult(string $inputFile, Logger $logger): int
     {
         $content = file_get_contents($inputFile);
         $lines = explode("\n", $content);

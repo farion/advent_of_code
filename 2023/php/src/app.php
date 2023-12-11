@@ -3,6 +3,9 @@
 require __DIR__ . '/../vendor/autoload.php';
 
 use Garden\Cli\Cli;
+use Monolog\Handler\StreamHandler;
+use Monolog\Level;
+use Monolog\Logger;
 
 $cli = new Cli();
 
@@ -21,5 +24,9 @@ if (!$input) {
     $input = "../resources/" . $day . "/input.txt";
 }
 
-echo ("\day" . $day . "\\" . strtolower($task) . "\\Solution" . $day . strtoupper($task).'::getResult')($input);
+$logger = new Logger("AoC2023");
+$stream_handler = new StreamHandler("php://stdout", Level::Debug);
+$logger->pushHandler($stream_handler);
+
+echo ("\day" . $day . "\\" . strtolower($task) . "\\Solution" . $day . strtoupper($task).'::getResult')($input,$logger);
 echo "\n";

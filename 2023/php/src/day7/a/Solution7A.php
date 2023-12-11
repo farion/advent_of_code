@@ -2,11 +2,12 @@
 
 namespace day7\a;
 
+use Monolog\Logger;
 use PHPUnit\Logging\Exception;
 
 final class Solution7A
 {
-    public static function getResult(string $inputFile): int
+    public static function getResult(string $inputFile, Logger $logger): int
     {
         $content = file_get_contents($inputFile);
         $lines = explode("\n", $content);

@@ -3,10 +3,11 @@
 namespace day8\b;
 
 use Exception;
+use Monolog\Logger;
 
 final class Solution8B
 {
-    public static function getResult(string $inputFile): int
+    public static function getResult(string $inputFile, Logger $logger): int
     {
         $content = file_get_contents($inputFile);
         $lines = explode("\n", $content);

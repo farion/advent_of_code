@@ -2,6 +2,8 @@
 
 namespace day2\a;
 
+use Monolog\Logger;
+
 final class Solution2A
 {
     private static $CONTENT = array(
@@ -10,7 +12,7 @@ final class Solution2A
         "blue" => 14
     );
 
-    public static function getResult(string $inputFile): int
+    public static function getResult(string $inputFile, Logger $logger): int
     {
         $content = file_get_contents($inputFile);
         $lines = explode("\n", $content);
