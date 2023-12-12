@@ -25,7 +25,7 @@ if (!$input) {
 }
 
 $logger = new Logger("AoC2023");
-$stream_handler = new StreamHandler("php://stdout", Level::Debug);
+$stream_handler = new StreamHandler("php://stdout", Level::Info);
 $logger->pushHandler($stream_handler);
 
 echo ("\day" . $day . "\\" . strtolower($task) . "\\Solution" . $day . strtoupper($task).'::getResult')($input,$logger);
