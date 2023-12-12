@@ -29,8 +29,12 @@ public class Coordinate {
         return new Coordinate(x + 1, y);
     }
 
+    Coordinate move(int xdiff, int ydiff) {
+        return new Coordinate(x + xdiff, y + ydiff);
+    }
+
     @Override
-    public String toString(){
+    public String toString() {
         return x + ":" + y;
     }
 

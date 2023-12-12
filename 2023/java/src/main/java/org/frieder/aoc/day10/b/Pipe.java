@@ -17,6 +17,10 @@ public enum Pipe {
 
     private final String str;
 
+    public static String d(Pipe p, Direction d) {
+        return p.name() + "-" + d.name();
+    }
+
     public static Pipe byStr(String str) {
         return Arrays.stream(values())
                 .filter(p -> p.getStr().equals(str))

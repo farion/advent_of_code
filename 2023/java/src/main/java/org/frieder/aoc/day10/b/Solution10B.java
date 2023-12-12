@@ -9,15 +9,22 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static org.frieder.aoc.day10.b.Direction.DOWN;
+import static org.frieder.aoc.day10.b.Direction.LEFT;
+import static org.frieder.aoc.day10.b.Direction.RIGHT;
+import static org.frieder.aoc.day10.b.Direction.UNDEFINED;
+import static org.frieder.aoc.day10.b.Direction.UP;
 import static org.frieder.aoc.day10.b.Pipe.I;
 import static org.frieder.aoc.day10.b.Pipe.O;
 import static org.frieder.aoc.day10.b.Pipe.__;
@@ -80,17 +87,12 @@ public class Solution10B {
 
 
         // mark known outside points
-        markAnOutsidePointTouchingPipe();
         markBorderPointsAsOutside();
-
 
         this.printMap(solutionMap);
 
         // do the real stuff
         markRemainingPoints();
-
-        //$this->print_map($this->inputMap);
-        //$this->print_map($this->solutionMap);
 
         // count inside
         return countInsidePoints();
@@ -124,7 +126,6 @@ public class Solution10B {
 
         Pipe r;
         if (pipeC != null) {
-
             Coordinate prev = null;
             Coordinate cur = pipeC;
             AtomicReference<Pipe> pipe = new AtomicReference<>();
@@ -133,24 +134,21 @@ public class Solution10B {
                 cur = traversePipe(prev, cur, pipeC, checked, pipe);
                 prev = newPrev;
             } while (cur != null);
-
             r = pipe.get();
         } else {
             r = O;
         }
 
-        checked.forEach(c -> {
-            solutionMap.get(c).setPipe(r);
-        });
+        checked.forEach(c -> solutionMap.get(c).setPipe(r));
 
         LOGGER.debug("-----");
     }
 
-    private Coordinate traversePipe(Coordinate prev, Coordinate coordinate, Coordinate start, Set<Coordinate> checked, AtomicReference<Pipe> result) {
+    private Coordinate traversePipe(Coordinate prev, Coordinate c, Coordinate start, Set<Coordinate> checked, AtomicReference<Pipe> result) {
         // We traverse always left or top
-        Pipe symbol = solutionMap.get(coordinate).getPipe();
+        Pipe symbol = solutionMap.get(c).getPipe();
 
-        Set<Coordinate> check = new HashSet<>();
+        Set<Coordinate> checks = new HashSet<>();
 
         Coordinate next;
 
@@ -158,30 +156,21 @@ public class Solution10B {
         if (prev == null) {
             switch (symbol) {
                 case DR:
-                    next = coordinate.right();
+                case LR:
+                    next = c.right();
                     break;
                 case UR:
-                    next = coordinate.up();
-                    break;
+                case DU:
                 case UL:
-                    next = coordinate.up();
+                    next = c.up();
                     break;
                 case DL:
-                    next = coordinate.left();
-                    break;
-                case LR:
-                    next = coordinate.right();
-                    break;
-                case DU:
-                    next = coordinate.up();
+                    next = c.left();
                     break;
                 case O:
-                    LOGGER.debug("Traverse outside(2) -> I");
-                    result.set(O);
-                    return null;
                 case I:
-                    LOGGER.debug("Traverse outside(2) -> I");
-                    result.set(I);
+                    LOGGER.debug("Traverse in/outside -> " + symbol);
+                    result.set(symbol);
                     return null;
                 default:
                     throw new RuntimeException();
@@ -191,96 +180,72 @@ public class Solution10B {
         } else {
 
             // We're back without hitting an O -> we are inside.
-            if (coordinate.equals(start)) {
-                LOGGER.debug("Traverse loop " + coordinate + " -> I");
+            if (c.equals(start)) {
+                LOGGER.debug("Traverse loop " + c + " -> I");
                 result.set(I);
                 return null;
             }
 
             // get direction from the entrance coordinate
-            Direction d = this.getDirection(prev, coordinate);
-            LOGGER.debug("Traverse (" + symbol.getStr() + ") " + d + " " + prev + " -> " + coordinate);
+            Direction d = this.getDirection(prev, c);
+            LOGGER.debug("Traverse (" + symbol.getStr() + ") " + d + " " + prev + " -> " + c);
 
-            switch (symbol) {
-                case DR:
-                    if (d == Direction.LEFT) {
-                        next = coordinate.down();
-                        // no check
-                    } else if (d == Direction.UP) {
-                        next = coordinate.right();
-                        check.add(coordinate.left());
-                        check.add(coordinate.up());
-                        check.add(new Coordinate(coordinate.getX() - 1, coordinate.getY() - 1));
-                    } else {
-                        throw new RuntimeException();
-                    }
+            switch (symbol.name() + d.name()) {
+                case "DRLEFT":
+                    next = c.down();
                     break;
-                case UR:
-                    if (d == Direction.DOWN) {
-                        next = coordinate.right();
-                        // no check
-                    } else if (d == Direction.LEFT) {
-                        next = coordinate.up();
-                        check.add(coordinate.left());
-                        check.add(coordinate.down());
-                        check.add(new Coordinate(coordinate.getX() - 1, coordinate.getY() + 1));
-                    } else {
-                        throw new RuntimeException();
-                    }
+                case "DRUP":
+                    next = c.right();
+                    checks.addAll(List.of(c.left(), c.up(), c.move(-1, -1)));
                     break;
-                case DL:
-                    if (d == Direction.RIGHT) {
-                        next = coordinate.down();
-                        check.add(coordinate.right());
-                        check.add(coordinate.up());
-                        check.add(new Coordinate(coordinate.getX() + 1, coordinate.getY() - 1));
-                    } else if (d == Direction.UP) {
-                        next = coordinate.left();
-                        // no check
-                    } else {
-                        throw new RuntimeException();
-                    }
+                case "URDOWN":
+                    next = c.right();
                     break;
-                case UL:
-                    if (d == Direction.DOWN) {
-                        next = coordinate.left();
-                        check.add(coordinate.right());
-                        check.add(coordinate.down());
-                        check.add(new Coordinate(coordinate.getX() + 1, coordinate.getY() + 1));
-                    } else if (d == Direction.RIGHT) {
-                        next = coordinate.up();
-                        // no check
-                    } else {
-                        throw new RuntimeException();
-                    }
+                case "URLEFT":
+                    next = c.up();
+                    checks.addAll(List.of(c.left(), c.down(), new Coordinate(c.getX() - 1, c.getY() + 1)));
                     break;
-                case LR:
-                    if (d == Direction.RIGHT) {
-                        next = coordinate.right();
-                        check.add(coordinate.up());
-                    } else if (d == Direction.LEFT) {
-                        next = coordinate.left();
-                        check.add(coordinate.down());
-                    } else {
-                        throw new RuntimeException();
-                    }
+                case "DLRIGHT":
+                    next = c.down();
+                    checks.addAll(List.of(c.right(), c.up(), c.move(1, -1)));
                     break;
-                case DU:
-                    if (d == Direction.DOWN) {
-                        next = coordinate.down();
-                        check.add(coordinate.right());
-                    } else if (d == Direction.UP) {
-                        next = coordinate.up();
-                        check.add(coordinate.left());
-                    } else {
-                        throw new RuntimeException();
-                    }
+                case "DLUP":
+                    next = c.left();
                     break;
-                case O:
+                case "ULDOWN":
+                    next = c.left();
+                    checks.addAll(List.of(c.right(), c.down(), c.move(1, 1)));
+                    break;
+                case "ULRIGHT":
+                    next = c.up();
+                    break;
+                case "LRRIGHT":
+                    next = c.right();
+                    checks.add(c.up());
+                    break;
+                case "LRLEFT":
+                    next = c.left();
+                    checks.add(c.down());
+                    break;
+                case "DUDOWN":
+                    next = c.down();
+                    checks.add(c.right());
+                    break;
+                case "DUUP":
+                    next = c.up();
+                    checks.add(c.left());
+                    break;
+                case "OLEFT":
+                case "ORIGHT":
+                case "OUP":
+                case "ODOWN":
                     LOGGER.debug("Traverse outside(1) -> O");
                     result.set(O);
                     return null;
-                case I:
+                case "ILEFT":
+                case "IRIGHT":
+                case "IUP":
+                case "IDOWN":
                     LOGGER.debug("Traverse outside(1) -> I");
                     result.set(I);
                     return null;
@@ -290,13 +255,13 @@ public class Solution10B {
         }
 
         // add new points to the lot of traversed ones
-        check.stream()
-                .filter(c -> solutionMap.get(c) != null && solutionMap.get(c).getPipe() == __)
+        checks.stream()
+                .filter(check -> solutionMap.get(check) != null && solutionMap.get(check).getPipe() == __)
                 .forEach(checked::add);
 
         // check if we hit an already decided point
-        Coordinate c1 = check.stream()
-                .filter(c -> solutionMap.get(c) != null && solutionMap.get(c).getPipe() == O)
+        Coordinate c1 = checks.stream()
+                .filter(check -> solutionMap.get(check) != null && solutionMap.get(check).getPipe() == O)
                 .findFirst()
                 .orElse(null);
 
@@ -306,8 +271,8 @@ public class Solution10B {
             return null;
         }
 
-        Coordinate c2 = check.stream()
-                .filter(c -> solutionMap.get(c) != null && solutionMap.get(c).getPipe() == I)
+        Coordinate c2 = checks.stream()
+                .filter(check -> solutionMap.get(check) != null && solutionMap.get(check).getPipe() == I)
                 .findFirst()
                 .orElse(null);
 
@@ -322,18 +287,11 @@ public class Solution10B {
     }
 
     private Direction getDirection(Coordinate prev, Coordinate coordinate) {
-        if (prev.up().equals(coordinate)) {
-            return Direction.UP;
-        }
-        if (prev.down().equals(coordinate)) {
-            return Direction.DOWN;
-        }
-        if (prev.right().equals(coordinate)) {
-            return Direction.RIGHT;
-        }
-        if (prev.left().equals(coordinate)) {
-            return Direction.LEFT;
-        }
+        if (prev == null) return UNDEFINED;
+        if (prev.up().equals(coordinate)) return UP;
+        if (prev.down().equals(coordinate)) return DOWN;
+        if (prev.right().equals(coordinate)) return RIGHT;
+        if (prev.left().equals(coordinate)) return LEFT;
         throw new RuntimeException();
     }
 
@@ -357,38 +315,19 @@ public class Solution10B {
     }
 
     private void markBorderPointsAsOutside() {
-
-        IntStream.range(0, maxX).forEach(
-                x -> {
-                    Field f1 = solutionMap.get(new Coordinate(x, 0));
-                    if (f1 != null && f1.getPipe().equals(__)) {
-                        f1.setPipe(Pipe.O);
-                    }
-                    Field f2 = solutionMap.get(new Coordinate(x, maxY - 1));
-                    if (f2 != null && f2.getPipe().equals(__)) {
-                        f2.setPipe(Pipe.O);
-                    }
-                }
-        );
-
-
-        IntStream.range(0, maxY).forEach(
-                y -> {
-                    Field f1 = solutionMap.get(new Coordinate(0, y));
-                    if (f1 != null && f1.getPipe().equals(__)) {
-                        f1.setPipe(Pipe.O);
-                    }
-                    Field f2 = solutionMap.get(new Coordinate(maxX - 1, y));
-                    if (f2 != null && f2.getPipe().equals(__)) {
-                        f2.setPipe(Pipe.O);
-                    }
-                }
-        );
-
+        markBorderPointsAsOutside(maxX, List.of(x -> new Coordinate(x, 0), x -> new Coordinate(x, maxY - 1)));
+        markBorderPointsAsOutside(maxY, List.of(y -> new Coordinate(0, y), y -> new Coordinate(maxX - 1, y)));
     }
 
-    private void markAnOutsidePointTouchingPipe() {
-
+    private void markBorderPointsAsOutside(int max, List<Function<Integer, Coordinate>> fns) {
+        IntStream.range(0, max).forEach(
+                i -> fns.forEach(fn -> {
+                    Field f1 = solutionMap.get(fn.apply(i));
+                    if (f1 != null && f1.getPipe().equals(__)) {
+                        f1.setPipe(Pipe.O);
+                    }
+                })
+        );
     }
 
     private void fillEmptySolutionMap() {
@@ -428,6 +367,7 @@ public class Solution10B {
         Coordinate right = inputMap.getOrDefault(c.right(), new Field(null, null)).getCoordinate();
 
         Pipe curPipe = inputMap.get(c).getPipe();
+        Direction d = getDirection(last, c);
 
         Coordinate a;
         Coordinate b;
