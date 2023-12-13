@@ -2,21 +2,21 @@
 
 $loader = require __DIR__ . '/../vendor/autoload.php';
 
-use day11\a\Solution11A;
+use day12\a\Solution12A;
 use PHPUnit\Framework\TestCase;
 use utils\TestLogger;
 
-final class TestDay11A extends TestCase
+final class TestDay12A extends TestCase
 {
 
     public function testExample(): void
     {
-        $this->assertSame(374, Solution11A::getResult("../resources/11/test_a.txt", TestLogger::createTestLogger()));
+        $this->assertSame(21, Solution12A::getResult("../resources/12/test_a.txt", TestLogger::createTestLogger()));
     }
 
     public function testResult(): void
     {
-        $this->assertSame(9805264, Solution11A::getResult("../resources/11/input.txt", TestLogger::createTestLogger()));
+        $this->assertSame(7260, Solution12A::getResult("../resources/12/input.txt", TestLogger::createTestLogger()));
     }
 
 }
