@@ -66,10 +66,10 @@ final class Solution10B
     {
         $this->solutionMap[$p[0]][$p[1]] = $this->inputMap[$p[0]][$p[1]];
 
-        $n = isset($this->inputMap[$p[0]][$p[1] - 1]) ? array($p[0], $p[1] - 1) : null;
-        $s = isset($this->inputMap[$p[0]][$p[1] + 1]) ? array($p[0], $p[1] + 1) : null;
-        $w = isset($this->inputMap[$p[0] - 1][$p[1]]) ? array($p[0] - 1, $p[1]) : null;
-        $e = isset($this->inputMap[$p[0] + 1][$p[1]]) ? array($p[0] + 1, $p[1]) : null;
+        $n = isset($this->inputMap[$p[0]][$p[1] - 1]) ? array($p[0], $p[1] - 1) : array(-1, -1);
+        $s = isset($this->inputMap[$p[0]][$p[1] + 1]) ? array($p[0], $p[1] + 1) : array(-1, -1);
+        $w = isset($this->inputMap[$p[0] - 1][$p[1]]) ? array($p[0] - 1, $p[1]) : array(-1, -1);
+        $e = isset($this->inputMap[$p[0] + 1][$p[1]]) ? array($p[0] + 1, $p[1]) : array(-1, -1);
 
         $symbol = $this->inputMap[$p[0]][$p[1]];
 
@@ -78,32 +78,38 @@ final class Solution10B
         if ($symbol == 'S') {
 
             // replace S with correct symbol
-            if (($m[$e[0]][$e[1]] === '7' || $m[$e[0]][$e[1]] === 'J' || $m[$e[0]][$e[1]] === '-') &&
+            if (isset($m[$e[0]][$e[1]]) && isset($m[$w[0]][$w[1]]) &&
+                ($m[$e[0]][$e[1]] === '7' || $m[$e[0]][$e[1]] === 'J' || $m[$e[0]][$e[1]] === '-') &&
                 ($m[$w[0]][$w[1]] === 'L' || $m[$w[0]][$w[1]] === 'F' || $m[$w[0]][$w[1]] === '-')) {
                 $this->solutionMap[$p[0]][$p[1]] = '-';
                 $a = array($p[0] + 1, $p[1]);
                 $b = array($p[0] - 1, $p[1]);
-            } elseif (($m[$n[0]][$n[1]] === '7' || $m[$n[0]][$n[1]] === 'F' || $m[$n[0]][$n[1]] === '|') &&
+            } elseif (isset($m[$n[0]][$n[1]]) && isset($m[$s[0]][$s[1]]) &&
+                ($m[$n[0]][$n[1]] === '7' || $m[$n[0]][$n[1]] === 'F' || $m[$n[0]][$n[1]] === '|') &&
                 ($m[$s[0]][$s[1]] === 'L' || $m[$s[0]][$s[1]] === 'J' || $m[$s[0]][$s[1]] === '|')) {
                 $this->solutionMap[$p[0]][$p[1]] = '|';
                 $a = array($p[0], $p[1] - 1);
                 $b = array($p[0], $p[1] + 1);
-            } elseif (($m[$e[0]][$e[1]] === '7' || $m[$e[0]][$e[1]] === 'J' || $m[$e[0]][$e[1]] === '-') &&
+            } elseif (isset($m[$e[0]][$e[1]]) && isset($m[$s[0]][$s[1]]) &&
+                ($m[$e[0]][$e[1]] === '7' || $m[$e[0]][$e[1]] === 'J' || $m[$e[0]][$e[1]] === '-') &&
                 ($m[$s[0]][$s[1]] === 'L' || $m[$s[0]][$s[1]] === 'J' || $m[$s[0]][$s[1]] === '|')) {
                 $this->solutionMap[$p[0]][$p[1]] = 'F';
                 $a = array($p[0] + 1, $p[1]);
                 $b = array($p[0], $p[1] + 1);
-            } elseif (($m[$e[0]][$e[1]] === '7' || $m[$e[0]][$e[1]] === 'J' || $m[$e[0]][$e[1]] === '-') &&
+            } elseif (isset($m[$e[0]][$e[1]]) && isset($m[$n[0]][$n[1]]) &&
+                ($m[$e[0]][$e[1]] === '7' || $m[$e[0]][$e[1]] === 'J' || $m[$e[0]][$e[1]] === '-') &&
                 ($m[$n[0]][$n[1]] === '7' || $m[$n[0]][$n[1]] === 'F' || $m[$n[0]][$n[1]] === '|')) {
                 $this->solutionMap[$p[0]][$p[1]] = 'L';
                 $a = array($p[0], $p[1] - 1);
                 $b = array($p[0] + 1, $p[1]);
-            } elseif (($m[$n[0]][$n[1]] === '7' || $m[$n[0]][$n[1]] === 'F' || $m[$n[0]][$n[1]] === '|') &&
+            } elseif (isset($m[$n[0]][$n[1]]) && isset($m[$n[0]][$n[1]]) &&
+                ($m[$n[0]][$n[1]] === '7' || $m[$n[0]][$n[1]] === 'F' || $m[$n[0]][$n[1]] === '|') &&
                 ($m[$w[0]][$w[1]] === 'L' || $m[$w[0]][$w[1]] === 'F' || $m[$w[0]][$w[1]] === '-')) {
                 $this->solutionMap[$p[0]][$p[1]] = 'J';
                 $a = array($p[0], $p[1] - 1);
                 $b = array($p[0] - 1, $p[1]);
-            } elseif (($m[$s[0]][$s[1]] === 'L' || $m[$s[0]][$s[1]] === 'J' || $m[$s[0]][$s[1]] === '|') &&
+            } elseif (isset($m[$s[0]][$s[1]]) && isset($m[$w[0]][$w[1]]) &&
+                ($m[$s[0]][$s[1]] === 'L' || $m[$s[0]][$s[1]] === 'J' || $m[$s[0]][$s[1]] === '|') &&
                 ($m[$w[0]][$w[1]] === 'L' || $m[$w[0]][$w[1]] === 'F' || $m[$w[0]][$w[1]] === '-')) {
                 $this->solutionMap[$p[0]][$p[1]] = '7';
                 $a = array($p[0] - 1, $p[1]);
@@ -210,7 +216,7 @@ final class Solution10B
 
     private function markRemainingPoint(int $x, int $y)
     {
-        $this->logger->debug("Start " . $x . ":" . $y );
+        $this->logger->debug("Start " . $x . ":" . $y);
         $checked = array(array($x, $y));
         $pipe = $this->findPipe($x, $y, $checked);
 
@@ -276,7 +282,7 @@ final class Solution10B
 
             // get direction from the entrance coordinate
             $d = $this->getDirection($px, $py, $x, $y);
-            $this->logger->debug( "Traverse (" . $symbol . ")" . $d . " " . $px . ":" . $py . " -> " . $x . ":" . $y );
+            $this->logger->debug("Traverse (" . $symbol . ")" . $d . " " . $px . ":" . $py . " -> " . $x . ":" . $y);
 
             switch ($symbol) {
                 case "F":
@@ -346,10 +352,10 @@ final class Solution10B
                     }
                     break;
                 case "O":
-                    $this->logger->debug( "Traverse outside(2) -> O");
+                    $this->logger->debug("Traverse outside(2) -> O");
                     return "O";
                 case "I":
-                    $this->logger->debug( "Traverse inside(2) -> I");
+                    $this->logger->debug("Traverse inside(2) -> I");
                     return "I";
                 default:
                     throw new Exception();
@@ -366,12 +372,12 @@ final class Solution10B
         foreach ($check as $c) {
             if (isset($this->solutionMap[$c[0]][$c[1]]) &&
                 $this->solutionMap[$c[0]][$c[1]] === "O") {
-                $this->logger->debug( "Traverse outside -> O");
+                $this->logger->debug("Traverse outside -> O");
                 return "O";
             }
             if (isset($this->solutionMap[$c[0]][$c[1]]) &&
                 $this->solutionMap[$c[0]][$c[1]] === "I") {
-                $this->logger->debug( "Traverse inside -> I");
+                $this->logger->debug("Traverse inside -> I");
                 return "I";
             }
         }
@@ -407,7 +413,7 @@ final class Solution10B
             return null;
         }
         if ($this->solutionMap[$myx][$y] !== ".") {
-            $this->logger->debug( "Found pipe at " . $myx . ":" . $y );
+            $this->logger->debug("Found pipe at " . $myx . ":" . $y);
             return array($myx, $y);
         }
 
