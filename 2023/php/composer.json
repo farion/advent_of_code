@@ -15,7 +15,8 @@
     "amphp/amp": "^3.0",
     "revolt/event-loop": "^1.0",
     "amphp/parallel": "^2.2",
-    "monolog/monolog": "^3.5"
+    "monolog/monolog": "^3.5",
+    "clue/graph": "^0.9.3"
   },
   "require-dev": {
     "phpunit/phpunit": "^10.5"
