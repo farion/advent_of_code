@@ -78,8 +78,6 @@ final class Solution16B
             }
         }
 
-        print_r($candidates);
-
         return max($candidates);
 
     }
@@ -130,7 +128,6 @@ final class Solution16B
 
     private function getCandidate(int $x, int $y, string $d): int
     {
-        $grid = array();
         $energy = array();
         $this->calculateEnergy($x, $y, $d, $energy);
         return $this->getEnergy($energy);
