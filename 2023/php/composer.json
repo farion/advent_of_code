@@ -16,7 +16,7 @@
     "revolt/event-loop": "^1.0",
     "amphp/parallel": "^2.2",
     "monolog/monolog": "^3.5",
-    "clue/graph": "^0.9.3"
+    "fisharebest/algorithm": "^1.6"
   },
   "require-dev": {
     "phpunit/phpunit": "^10.5"
