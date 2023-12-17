@@ -7,6 +7,10 @@ use Monolog\Logger;
 final class Solution17B
 {
 
+    /*
+     * too high 1443
+     * too high 1448
+     */
 
     private int $currentMin;
 
@@ -65,8 +69,8 @@ final class Solution17B
         echo $this->maxY."\n";
         exit();*/
 
-        $this->findPath(0, 0, ">", 1, 0, "");
-        $this->findPath(0, 0, "v", 1, 0, "");
+        $this->findPath(0, 0, ">", 0, 0, "");
+        $this->findPath(0, 0, "v", 0, 0, "");
 
         print_r($this->history);
 
@@ -78,7 +82,7 @@ final class Solution17B
         $nextSteps = array();
 
         foreach (self::$MOVES[$d] as $move) {
-            if ($straightMoves >= 10)
+            if ($straightMoves > 10)
                 continue; //skip same direction after three moves in the same direction
 
             if($straightMoves < 4 && $move[1] !== $d)
