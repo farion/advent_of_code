@@ -3,3 +3,4 @@
 **/*.iml
 **/vendor/
 **/composer.lock
+2023/resources/
