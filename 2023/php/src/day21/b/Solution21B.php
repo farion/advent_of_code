@@ -3,19 +3,16 @@
 namespace day21\b;
 
 use Monolog\Logger;
-use RuntimeException;
 
 final class Solution21B
 {
-    private array $modules = array();
-
-    private array $signalQueue = array();
 
     private Logger $logger;
-
-    private int $lowCount = 0;
-
-    private int $highCount = 0;
+    private array $grid = [];
+    private int $startX;
+    private int $startY;
+    private int $height;
+    private int $width;
 
     public static function getResult(string $inputFile, Logger $logger): int
     {
@@ -33,114 +30,70 @@ final class Solution21B
             $line = $lines[$y];
             if (!trim($line))
                 break;
-
-            preg_match("/^([a-z%&]+) -> ([a-z, ]+)$/", $line, $matches1);
-            preg_match_all("/[a-z]+/", $matches1[2], $matches2);
-            if ($matches1[1][0] == "&") {
-                $moduleName = substr($matches1[1], 1);
-                $moduleType = "conjunction";
-
-            } elseif ($matches1[1][0] == "%") {
-                $moduleName = substr($matches1[1], 1);
-                $moduleType = "flipflop";
-            } else {
-                $moduleName = "broadcaster";
-                $moduleType = "broadcaster";
-            }
-
-            $this->modules[$moduleName] = ["type" => $moduleType, "targets" => $matches2[0]];
-        }
-
-        foreach ($this->modules as $name => $module) {
-            if ($module["type"] == "conjunction") {
-                $inputStates = [];
-                foreach ($this->modules as $inputName => $inputModule) {
-                    if (in_array($name, $inputModule["targets"])) {
-                        $inputStates[$inputName] = 0;
-                    }
-                }
-                $this->modules[$name]["inputStates"] = $inputStates;
-            }
-            if ($module["type"] == "flipflop") {
-                $this->modules[$name]["state"] = 0;
-            }
-
-            foreach($module["targets"] as $target){
-                if(!isset($this->modules[$target])){
-                    $this->modules[$target] = ["type" => "sink", "targets" => []];
+            for ($x = 0; $x < strlen($line); $x++) {
+                $this->grid[$x][$y] = $line[$x];
+                if ($line[$x] == "S") {
+                    $this->startX = $x;
+                    $this->startY = $y;
                 }
             }
         }
 
-        for ($i = 0; $i < 1000; $i++) {
-            $this->pushToQueue("button", "broadcaster", 0);
-            $this->runQueue();
+        $rounds = 26501365;
+
+        $this->height = sizeof($this->grid[0]);
+        $this->width = sizeof($this->grid);
+
+        $half = $rounds % $this->width;
+
+        $mapExpand = (int)($rounds / $this->width);
+
+        $x1 = $this->runTurn($half);
+        $x2 = $this->runTurn($this->width + $half);
+        $x3 = $this->runTurn($this->width * 2 + $half);
+
+        $a = (pow($mapExpand, 2) - 3 * $mapExpand + 2) / 2;
+        $b = (pow($mapExpand, 2) - 2 * $mapExpand + 0) / -1;
+        $c = (pow($mapExpand, 2) - 1 * $mapExpand + 0) / 2;
+
+        return $a * $x1 + $b * $x2 + $c * $x3;
+    }
+
+    private function nextTurn($steps): array
+    {
+        $nextsteps = [];
+        foreach ($steps as $step) {
+            foreach ($this->getNextStep($step[0], $step[1]) as $nextstep) {
+                $nextsteps[$nextstep[0] . "-" . $nextstep[1]] = [$nextstep[0], $nextstep[1]];
+            }
         }
-
-        return $this->lowCount*$this->highCount;
+        return $nextsteps;
     }
 
-    private function pushToQueue(string $input, string $target, int $signal): void
+    private function getNextStep($x, $y): array
     {
-        $this->signalQueue[] = ["input" => $input, "target" => $target, "signal" => $signal];
+        $steps = [];
+        if ($this->isInGridOrExpand($x, $y - 1)) $steps[$x . "-" . ($y - 1)] = [$x, $y - 1];
+        if ($this->isInGridOrExpand($x, $y + 1)) $steps[$x . "-" . ($y + 1)] = [$x, $y + 1];
+        if ($this->isInGridOrExpand($x - 1, $y)) $steps[($x - 1) . "-" . $y] = [$x - 1, $y];
+        if ($this->isInGridOrExpand($x + 1, $y)) $steps[($x + 1) . "-" . $y] = [$x + 1, $y];
+        return $steps;
     }
 
-    private function getSignalFromQueue(): array
+    private function runTurn(int $rounds): int
     {
-        return array_shift($this->signalQueue);
-    }
-
-    private function runQueue()
-    {
-        while (sizeof($this->signalQueue)) {
-            $nextSignal = $this->getSignalFromQueue();
-            $this->logger->debug($nextSignal["input"] . " -" . ($nextSignal["signal"] ? "high" : "low") . "-> " . $nextSignal["target"]);
-            if ($nextSignal["signal"] == 1) {
-                $this->highCount++;
-            } else {
-                $this->lowCount++;
-            }
-            $this->pushSignal($nextSignal);
+        $steps = [];
+        $steps[$this->startX . "-" . $this->startY] = [$this->startX, $this->startY];
+        for ($i = 0; $i < $rounds; $i++) {
+            $steps = $this->nextTurn($steps);
         }
-
+        return sizeof($steps);
     }
 
-    private function pushSignal(array $nextSignal)
+    private function isInGridOrExpand($x, int $y)
     {
-        $module = &$this->modules[$nextSignal["target"]];
-        $input = $nextSignal["target"];
-        $prev = $nextSignal["input"];
-
-        if ($module["type"] == "broadcaster") {
-            foreach ($module["targets"] as $target) {
-                $this->pushToQueue($input, $target, $nextSignal["signal"]);
-            }
-        } elseif ($module["type"] == "conjunction") {
-            if (!isset($module["inputStates"][$prev]))
-                throw new RuntimeException();
-            $this->modules[$input]["inputStates"][$prev] = $nextSignal["signal"];
-            $allHigh = true;
-            foreach ($this->modules[$input]["inputStates"] as $inputState) {
-                if ($inputState == 0) {
-                    $allHigh = false;
-                    break;
-                }
-            }
-
-            foreach ($module["targets"] as $target) {
-                $this->pushToQueue($input, $target, $allHigh ? 0 : 1);
-            }
-        } elseif ($module["type"] == "flipflop") {
-            if ($nextSignal["signal"] == 0) {
-                $module["state"] = $module["state"] ? 0 : 1;
-                foreach ($module["targets"] as $target) {
-                    $this->pushToQueue($input, $target, $module["state"]);
-                }
-            }
-        }elseif($module["type"] == "sink"){
-            // nothing to do
-        }else{
-            throw new RuntimeException();
-        }
+        $newX = ($x % $this->width + $this->width) % $this->width;
+        $newY = ($y % $this->height + $this->height) % $this->height;
+        return isset($this->grid[$newX][$newY]) && $this->grid[$newX][$newY] != "#";
     }
 }

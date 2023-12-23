@@ -8,13 +8,8 @@ final class Solution21A
 {
 
     private Logger $logger;
-
     private array $grid = [];
-
-    private array $steps = [];
-
     private int $startX;
-
     private int $startY;
 
     public static function getResult(string $inputFile, Logger $logger): int
@@ -42,62 +37,42 @@ final class Solution21A
             }
         }
 
-        $this->runTurn(64);
-
-        return $this->getCount();
+        return $this->runTurn(64);
     }
 
-    private function nextTurn($i): array
+    private function nextTurn($steps): array
     {
-        $steps = [];
-        foreach ($this->steps as $x => $stepCol) {
-            foreach ($stepCol as $y => $stepCell) {
-                foreach ($this->getNextStep($x, $y, $i) as $step) {
-                    $steps[$step[0]][$step[1]] = true;
-                }
+        $nextsteps = [];
+        foreach ($steps as $step) {
+            foreach ($this->getNextStep($step[0], $step[1]) as $nextstep) {
+                $nextsteps[$nextstep[0] . "-" . $nextstep[1]] = [$nextstep[0], $nextstep[1]];
             }
         }
+        return $nextsteps;
+    }
+
+    private function getNextStep($x, $y): array
+    {
+        $steps = [];
+        if ($this->isInGrid($x, $y - 1)) $steps[$x . "-" . ($y - 1)] = [$x, $y - 1];
+        if ($this->isInGrid($x, $y + 1)) $steps[$x . "-" . ($y + 1)] = [$x, $y + 1];
+        if ($this->isInGrid($x - 1, $y)) $steps[($x - 1) . "-" . $y] = [$x - 1, $y];
+        if ($this->isInGrid($x + 1, $y)) $steps[($x + 1) . "-" . $y] = [$x + 1, $y];
         return $steps;
     }
 
-    private function getNextStep($x, $y, $i):array
+    private function runTurn(int $rounds): int
     {
         $steps = [];
-
-        if (isset($this->grid[$x][$y - 1]) && $this->grid[$x][$y - 1] != "#")
-            $steps[] = [$x, $y - 1];
-
-        if (isset($this->grid[$x][$y + 1]) && $this->grid[$x][$y + 1] != "#")
-            $steps[] = [$x, $y + 1];
-
-        if (isset($this->grid[$x - 1][$y]) && $this->grid[$x - 1][$y] != "#")
-            $steps[] = [$x - 1, $y];
-
-        if (isset($this->grid[$x + 1][$y]) && $this->grid[$x + 1][$y] != "#")
-            $steps[] = [$x + 1, $y];
-
-        return $steps;
-
-    }
-
-    private function getCount(): int
-    {
-        $c = 0;
-        foreach ($this->steps as $stepCol) {
-            foreach ($stepCol as $stepCell) {
-                $c++;
-            }
-        }
-        return $c;
-    }
-
-    private function runTurn(int $rounds):void
-    {
-        $this->steps = [];
-        $this->steps[$this->startX][$this->startY] = true;
-
+        $steps[$this->startX . "-" . $this->startY] = [$this->startX, $this->startY];
         for ($i = 0; $i < $rounds; $i++) {
-            $this->steps = $this->nextTurn($i);
+            $steps = $this->nextTurn($steps);
         }
+        return sizeof($steps);
+    }
+
+    private function isInGrid($x, int $y)
+    {
+        return isset($this->grid[$x][$y]) && $this->grid[$x][$y] != "#";
     }
 }
