@@ -6,8 +6,7 @@
       "\\": ["src/","test/"]
     },
     "classmap": [
-      "src",
-      "test"
+      "src"
     ]
   },
   "require": {
@@ -18,12 +17,6 @@
     "monolog/monolog": "^3.5",
     "fisharebest/algorithm": "^1.6",
     "markrogoyski/math-php": "^2.8"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "^10.5"
-  },
-  "scripts": {
-    "test": "vendor/bin/phpunit test/*"
   },
   "license": "GPL-3.0-only"
 }
