@@ -45,32 +45,27 @@ final class Solution23A
         if ($p[0] == $this->end[0] && $p[1] == $this->end[1]) {
             return [$l];
         }
-        $o = $this->getOutputs($p);
+        
+        $outputs = $this->getOutputs($p);
 
         $r = [];
         for ($nd = 0; $nd < 4; $nd++) {
-            if ($d == ($nd + 2) % 4 || !isset($o[$nd]))
-                continue;
-            $r = array_merge($this->getNextNode($o[$nd], $nd, $l + 1), $r);
+            if ($d == ($nd + 2) % 4 || !isset($outputs[$nd])) continue;
+            $r = array_merge($this->getNextNode($outputs[$nd], $nd, $l + 1), $r);
         }
-
         return $r;
     }
 
     private function getOutputs(array $p)
     {
         $outputs = [];
-
         for ($i = 0; $i < 4; $i++) {
             $x = $p[0] + $this->DIR_MAP[$i][0];
             $y = $p[1] + $this->DIR_MAP[$i][1];
             $d = $this->DIR_MAP[$i][2];
-
             if (isset($this->map[$x][$y]) && ($this->map[$x][$y] == "." || $this->map[$x][$y] == $d))
                 $outputs[$i] = [$x, $y];
         }
-
         return $outputs;
     }
-
 }

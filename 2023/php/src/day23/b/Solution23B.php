@@ -43,7 +43,6 @@ final class Solution23B
         $this->findEdges(null, $this->start, null, 0);
         $this->addInvertedEdges();
         $this->findLongestPath($this->start, []);
-
         return $this->max;
     }
 
@@ -54,19 +53,15 @@ final class Solution23B
 
         $l++;
         if ($isNode && $lastNode != null) {
-            if (isset($this->edges[$lastNode[0]][$lastNode[1]][$next[0]][$next[1]]))
-                return;
+            if (isset($this->edges[$lastNode[0]][$lastNode[1]][$next[0]][$next[1]])) return;
             $this->edges[$lastNode[0]][$lastNode[1]][$next[0]][$next[1]] = $l;
             $lastNode = $next;
             $l = 0;
         }
 
-        $lastNode = $isNode && $lastNode == null ? $next : $lastNode;
-
         foreach ($outputs as $o) {
-            if ($prev != null && $o[0] == $prev[0] && $o[1] == $prev[1])
-                continue;
-            $this->findEdges($lastNode, $o, $next, $l);
+            if ($prev != null && $o[0] == $prev[0] && $o[1] == $prev[1]) continue;
+            $this->findEdges($isNode && $lastNode == null ? $next : $lastNode, $o, $next, $l);
         }
     }
 
