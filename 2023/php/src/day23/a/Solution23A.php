@@ -6,9 +6,14 @@ use Monolog\Logger;
 
 final class Solution23A
 {
-
-    private array $bricks = [];
-    private array $space = [];
+    private array $map;
+    private array $end;
+    private array $DIR_MAP = [
+        0 => [0, 1, "v"],
+        1 => [-1, 0, "<"],
+        2 => [0, -1, "^"],
+        3 => [1, 0, ">"]
+    ];
 
     public static function getResult(string $inputFile, Logger $logger): int
     {
@@ -25,82 +30,47 @@ final class Solution23A
             $line = $lines[$y];
             if (!trim($line))
                 break;
-            preg_match("/^([0-9]+),([0-9]+),([0-9]+)~([0-9]+),([0-9]+),([0-9]+)$/", $line, $matches);
-            $this->bricks[$y] = [
-                "name" => $y,
-                "char" => chr($y + 65),
-                "a" => [$matches[1], $matches[2], $matches[3]],
-                "b" => [$matches[4], $matches[5], $matches[6]]];
-        }
-
-        foreach ($this->bricks as $i => $b) {
-            for ($x = min($b["a"][0], $b["b"][0]); $x <= max($b["a"][0], $b["b"][0]); $x++) {
-                for ($y = min($b["a"][1], $b["b"][1]); $y <= max($b["a"][1], $b["b"][1]); $y++) {
-                    for ($z = min($b["a"][2], $b["b"][2]); $z <= max($b["a"][2], $b["b"][2]); $z++) {
-                        $this->space[$x][$y][$z] = $b["name"];
-                    }
-                }
+            for ($x = 0; $x < strlen($line); $x++) {
+                $this->map[$x][$y] = $line[$x];
             }
         }
 
-        do {
-            $fallen = false;
-            foreach ($this->bricks as $b) {
-                $f = $this->canFall($b);
-                if ($f > 0) {
-                    $this->fall($b, $f);
-                    $fallen = true;
-                }
-
-            }
-        } while ($fallen);
-
-        $disintegragted = 0;
-        foreach ($this->bricks as $b) {
-            $isrequired = false;
-            foreach ($this->bricks as $cand) {
-                if ($cand["name"] == $b["name"]) continue;
-                if ($this->canFall($cand, $b) > 0) $isrequired = true;
-            }
-            if (!$isrequired) $disintegragted++;
-        }
-
-        return $disintegragted;
+        $start = [1, 0];
+        $this->end = [sizeof($this->map) - 2, sizeof($this->map[0]) - 1];
+        return max($this->getNextNode($start, 0, 0));
     }
 
-    private function canFall(mixed $b, $ignore = null): int
+    private function getNextNode(array $p, int $d, int $l)
     {
-        $i = 0;
-        while (true) {
-            $i++;
-            for ($x = min($b["a"][0], $b["b"][0]); $x <= max($b["a"][0], $b["b"][0]); $x++) {
-                for ($y = min($b["a"][1], $b["b"][1]); $y <= max($b["a"][1], $b["b"][1]); $y++) {
-                    for ($z = min($b["a"][2], $b["b"][2]); $z <= max($b["a"][2], $b["b"][2]); $z++) {
-                        if ($z - $i >= 1 &&
-                            (!isset($this->space[$x][$y][$z - $i]) ||
-                                $this->space[$x][$y][$z - $i] == $b["name"] ||
-                                ($ignore != null && $this->space[$x][$y][$z - $i] == $ignore["name"]))) {
-                            continue;
-                        }
-                        return $i - 1;
-                    }
-                }
-            }
+        if ($p[0] == $this->end[0] && $p[1] == $this->end[1]) {
+            return [$l];
         }
+        $o = $this->getOutputs($p);
+
+        $r = [];
+        for ($nd = 0; $nd < 4; $nd++) {
+            if ($d == ($nd + 2) % 4 || !isset($o[$nd]))
+                continue;
+            $r = array_merge($this->getNextNode($o[$nd], $nd, $l + 1), $r);
+        }
+
+        return $r;
     }
 
-    private function fall(mixed $b, $i)
+    private function getOutputs(array $p)
     {
-        for ($x = min($b["a"][0], $b["b"][0]); $x <= max($b["a"][0], $b["b"][0]); $x++) {
-            for ($y = min($b["a"][1], $b["b"][1]); $y <= max($b["a"][1], $b["b"][1]); $y++) {
-                for ($z = min($b["a"][2], $b["b"][2]); $z <= max($b["a"][2], $b["b"][2]); $z++) {
-                    unset($this->space[$x][$y][$z]);
-                    $this->space[$x][$y][$z - $i] = $b["name"];
-                }
-            }
+        $outputs = [];
+
+        for ($i = 0; $i < 4; $i++) {
+            $x = $p[0] + $this->DIR_MAP[$i][0];
+            $y = $p[1] + $this->DIR_MAP[$i][1];
+            $d = $this->DIR_MAP[$i][2];
+
+            if (isset($this->map[$x][$y]) && ($this->map[$x][$y] == "." || $this->map[$x][$y] == $d))
+                $outputs[$i] = [$x, $y];
         }
-        $this->bricks[$b["name"]]["a"][2] -= $i;
-        $this->bricks[$b["name"]]["b"][2] -= $i;
+
+        return $outputs;
     }
 
 }
