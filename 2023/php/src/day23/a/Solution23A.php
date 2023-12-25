@@ -45,7 +45,7 @@ final class Solution23A
         if ($p[0] == $this->end[0] && $p[1] == $this->end[1]) {
             return [$l];
         }
-        
+
         $outputs = $this->getOutputs($p);
 
         $r = [];

@@ -17,6 +17,7 @@
         <lombok.version>1.18.22</lombok.version>
     </properties>
 
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -45,8 +46,16 @@
             <artifactId>psjava</artifactId>
             <version>0.1.19</version>
         </dependency>
-
-
+        <dependency>
+            <groupId>tools.aqua</groupId>
+            <artifactId>z3-turnkey</artifactId>
+            <version>4.12.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jgrapht</groupId>
+            <artifactId>jgrapht-core</artifactId>
+            <version>1.5.2</version>
+        </dependency>
     </dependencies>
 
     <build>
